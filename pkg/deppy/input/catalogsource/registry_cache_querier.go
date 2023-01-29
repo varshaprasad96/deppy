@@ -59,7 +59,7 @@ func (r *CachedRegistryEntitySource) StartCache(ctx context.Context) {
 	if err := r.populate(ctx); err != nil {
 		r.logger.Error(err, "error populating initial entity cache")
 	} else {
-		r.logger.Info("Populated initial cache")
+		r.logger.Info("Populated initial cache", "len", len(r.cache))
 	}
 	for {
 		select {
@@ -184,6 +184,7 @@ func (r *CachedRegistryEntitySource) populate(ctx context.Context) error {
 	defer r.RWMutex.Unlock()
 	catalogSourceList := v1alpha1.CatalogSourceList{}
 	if err := r.client.List(ctx, &catalogSourceList); err != nil {
+		fmt.Println("error listing entities", err)
 		return err
 	}
 	var errs []error
@@ -193,6 +194,7 @@ func (r *CachedRegistryEntitySource) populate(ctx context.Context) error {
 		}
 		imageID, err := r.imageIDFromCatalogSource(ctx, &catalogSource)
 		if err != nil {
+			fmt.Println("error getting imageId")
 			errs = append(errs, err)
 			continue
 		}
@@ -201,6 +203,7 @@ func (r *CachedRegistryEntitySource) populate(ctx context.Context) error {
 		}
 		entities, err := r.rClient.ListEntities(ctx, &catalogSource)
 		if err != nil {
+			fmt.Println("error listing entities from client")
 			errs = append(errs, err)
 			continue
 		}
